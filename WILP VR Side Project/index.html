@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+  <script>
+    // Thumbstick walking on the left controller (in VR)
+    AFRAME.registerComponent('thumb-move', {
+      schema: { speed: { default: 2 } },
+      init() {
+        this.dir = new THREE.Vector2();
+        this.el.addEventListener('thumbstickmoved', e => this.dir.set(e.detail.x, e.detail.y));
+      },
+      tick(t, dt) {
+        const cam = this.el.sceneEl.camera.el;
+        const rig = this.el.parentEl;
+        const yaw = cam.object3D.rotation.y;
+        const d = this.data.speed * dt / 1000;
+        rig.object3D.position.x += (this.dir.x * Math.cos(yaw) + this.dir.y * Math.sin(yaw)) * d;
+        rig.object3D.position.z += (-this.dir.x * Math.sin(yaw) + this.dir.y * Math.cos(yaw)) * d;
+      }
+    });
+  </script>
+</head>
+<body>
+  <a-scene>
+    <a-assets><a-asset-item id="lab" src="labs-3d-model.glb"></a-asset-item></a-assets>
+    <a-entity gltf-model="#lab"></a-entity>
+    <a-sky color="#1b2230"></a-sky>
+    <a-entity light="type: ambient; intensity: 0.8"></a-entity>
+    <a-entity light="type: directional; intensity: 0.6" position="2 6 3"></a-entity>
+
+    <a-entity id="rig" position="0 0 15">
+      <a-camera wasd-controls="acceleration: 20" look-controls></a-camera>
+      <a-entity oculus-touch-controls="hand: left" thumb-move></a-entity>
+      <a-entity oculus-touch-controls="hand: right"></a-entity>
+    </a-entity>
+  </a-scene>
+</body>
+</html>
